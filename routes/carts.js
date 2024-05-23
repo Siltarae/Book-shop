@@ -12,11 +12,12 @@ router
   //장바구니 조회
   .get((req, res) => {
     res.json("장바구니 조회");
-  })
-  //장바구니 도서 삭제
-  .delete("/:id", (req, res) => {
-    res.json("장바구니 도서 삭제");
   });
+//장바구니 도서 삭제
+
+router.delete("/:id", (req, res) => {
+  res.json("장바구니 도서 삭제");
+});
 //장바구니에서 선택한 상품 목록 조회
 // .get((req, res) => {
 //   res.json("장바구니 조회");

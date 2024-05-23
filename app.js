@@ -1,10 +1,8 @@
 const express = require("express");
 const app = express();
+const config = require("./config/config");
 
-const dotenv = require("dotenv");
-dotenv.config();
-
-app.listen(process.env.PORT);
+app.listen(config.port);
 
 const userRouter = require("./routes/user");
 const bookRouter = require("./routes/books");
