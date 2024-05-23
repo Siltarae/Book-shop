@@ -10,4 +10,7 @@ module.exports = {
     database: process.env.DB_DATABASE,
     dateStrings: true,
   },
+  jwt: {
+    privateKey: process.env.PRIVATE_KEY, //jwt secret key
+  },
 };
