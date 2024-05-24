@@ -5,7 +5,7 @@ const {
   login,
   resetPasswordRequest,
   resetPassword,
-} = require("../controller/userController");
+} = require("../controller/UserController");
 
 router.use(express.json());
 
