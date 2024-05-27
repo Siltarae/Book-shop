@@ -10,7 +10,12 @@ VALUES ("백설공주들", "종이책", 2, "사과..", "빨간 사과..", "김�
 INSERT INTO books (title, form, isbn, summary, detail, author, pages, contents, price, pub_date)
 VALUES ("흥부와 놀부들", "종이책", 3, "제비..", "까만 제비..", "김제비", 100, "목차입니다.", 20000, "2023-12-08");
 
-select * FROM books LEFT
-JOIN category On books.category_id=category.id
+select * FROM books 
+LEFT JOIN category On books.category_id=category.id
 
 SELECT * FROM books LEFT JOIN category ON books.category_id=category.idWHERE books.id = 1 
+
+
+INSERT INTO likes (user_id, liked_book_id) VALUES (1, 1);
+
+DELETE FROM likes WHERE user_id = 1 AND liked_book_id = 3;
