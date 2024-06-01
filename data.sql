@@ -42,3 +42,27 @@ DELETE FROM cartItems WHERE cartItem_id = ?;
 SELECT * FROM Bookshop.cartItems
 WHERE user_id = 1
 AND cartItem_id IN(1,3)
+
+
+// 주문하기
+// 배송 정보 입력
+INSERT INTO delivery (address, receiver, contact) VALUES ("서울시 중구", "홍길동", "010-1234-5678");
+const delivery_id = SELECT max(delivery_id) FROM delivery;
+
+// 주문 정보 입력
+INSERT INTO orders (book_title, total_quantity, total_price, user_id, delivery_id) 
+VALUES ("어린왕자들", 3, 60000, 1, delivery_id);
+const order_id = SELECT max(order_id) FROM orders;
+
+// 주문 상세 목록 입력
+INSERT INTO orderedBook (order_id, book_id, quantity)
+VALUES (order_id, 1, 1);
+INSERT INTO orderedBook (order_id, book_id, quantity)
+VALUES (order_id, 3, 2);
+
+//
+
+SELECT order_id, book_title,total_quantity,total_price,created_at,address,receiver,contact 
+FROM orders
+LEFT JOIN delivery
+ON orders.delivery_id = delivery.delivery_id

@@ -3,10 +3,10 @@ const { StatusCodes } = require("http-status-codes");
 
 const addLike = (req, res) => {
   const { id } = req.params;
-  const { user_id } = req.body;
+  const { userId } = req.body;
 
   const sql = "INSERT INTO likes (user_id, liked_book_id) VALUES (?, ?);";
-  const values = [user_id, id];
+  const values = [userId, id];
   conn.query(sql, values, (err, results) => {
     if (err) {
       console.log(err);
@@ -19,10 +19,10 @@ const addLike = (req, res) => {
 
 const removeLike = (req, res) => {
   const { id } = req.params;
-  const { user_id } = req.body;
+  const { userId } = req.body;
 
   const sql = "DELETE FROM likes WHERE user_id = ? AND liked_book_id = ?;";
-  const values = [user_id, id];
+  const values = [userId, id];
   conn.query(sql, values, (err, results) => {
     if (err) {
       console.log(err);

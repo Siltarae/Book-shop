@@ -2,7 +2,7 @@ const conn = require("../mariadb");
 const { StatusCodes } = require("http-status-codes");
 
 const searchBooks = (req, res) => {
-  let { category_id, news, limit, currentPage } = req.query;
+  let { categoryId, news, limit, currentPage } = req.query;
   let values = [];
 
   news = news === "true";
@@ -10,13 +10,13 @@ const searchBooks = (req, res) => {
   let sql =
     "SELECT *, (SELECT count(*) FROM likes WHERE liked_book_id=books.book_id) AS likes FROM books";
 
-  if (category_id || news) {
+  if (categoryId || news) {
     sql += " WHERE";
 
-    if (category_id) {
-      category_id = parseInt(category_id);
+    if (categoryId) {
+      categoryId = parseInt(categoryId);
       sql += " category_id = ?";
-      values.push(category_id);
+      values.push(categoryId);
       if (news) {
         sql += " AND";
       }
@@ -55,10 +55,10 @@ const searchBooks = (req, res) => {
 };
 
 const getBookById = (req, res) => {
-  let { user_id } = req.body;
-  let book_id = req.params.id;
-  console.log(book_id);
-  book_id = parseInt(book_id);
+  let { userId } = req.body;
+  let bookId = req.params.id;
+  console.log(bookId);
+  bookId = parseInt(bookId);
 
   const sql = `SELECT *,
   (SELECT count(*) FROM likes WHERE liked_book_id=books.book_id) AS likes,
@@ -67,7 +67,7 @@ const getBookById = (req, res) => {
   LEFT JOIN category On books.category_id=category.category_id
   WHERE books.book_id = 1`;
 
-  const values = [user_id, book_id, book_id];
+  const values = [userId, bookId, bookId];
 
   conn.query(sql, values, (err, results) => {
     if (err) {
