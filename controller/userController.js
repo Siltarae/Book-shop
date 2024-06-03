@@ -49,6 +49,7 @@ const login = (req, res) => {
     if (loginUser && loginUser.password === rawPassword) {
       const token = jwt.sign(
         {
+          id: loginUser.user_id,
           email: loginUser.email,
         },
         config.jwt.privateKey,
