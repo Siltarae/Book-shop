@@ -1,14 +1,17 @@
 const conn = require("../mariadb");
 const { StatusCodes } = require("http-status-codes");
+const jwt = require("jsonwebtoken");
+const ensureAuthorization = require("../auth");
 
 const searchBooks = (req, res) => {
+  let allBooksRes = {};
   let { categoryId, news, limit, currentPage } = req.query;
   let values = [];
 
   news = news === "true";
 
   let sql =
-    "SELECT *, (SELECT count(*) FROM likes WHERE liked_book_id=books.book_id) AS likes FROM books";
+    "SELECT SQL_CALC_FOUND_ROWS *, (SELECT count(*) FROM likes WHERE liked_book_id=books.book_id) AS likes FROM books";
 
   if (categoryId || news) {
     sql += " WHERE";
@@ -47,42 +50,92 @@ const searchBooks = (req, res) => {
 
     const hasBooks = results.length > 0;
     if (hasBooks) {
-      return res.status(StatusCodes.OK).json(results);
+      allBooksRes.books = results;
     } else {
       return res.status(StatusCodes.NOT_FOUND).end();
     }
   });
+
+  sql = "SELECT found_rows()";
+  conn.query(sql, (err, results) => {
+    if (err) {
+      console.log(err);
+      return res.status(StatusCodes.BAD_REQUEST).end();
+    }
+
+    let pagination = {};
+    pagination.currentPage = currentPage;
+    pagination.totalCount = results[0]["found_rows()"];
+
+    allBooksRes.pagination = pagination;
+
+    return res.status(StatusCodes.OK).json(allBooksRes);
+  });
 };
 
 const getBookById = (req, res) => {
-  let { userId } = req.body;
   let bookId = req.params.id;
-  console.log(bookId);
   bookId = parseInt(bookId);
 
-  const sql = `SELECT *,
+  const authorization = ensureAuthorization(req, res);
+  const userId = authorization.id;
+
+  if (authorization instanceof jwt.TokenExpiredError) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "로그인 세션이 만료되었습니다. 다시 로그인 하세요" });
+  } else if (authorization instanceof jwt.JsonWebTokenError) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "잘못된 토큰 입니다." });
+  } else if (authorization instanceof ReferenceError) {
+    const sql = `SELECT *,
+    (SELECT count(*) FROM likes WHERE liked_book_id=books.book_id) AS likes
+    FROM books
+    LEFT JOIN category On books.category_id=category.category_id
+    WHERE books.book_id = 1`;
+
+    const values = [bookId];
+
+    conn.query(sql, values, (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(StatusCodes.BAD_REQUEST).end();
+      }
+
+      const book = results[0];
+
+      if (book) {
+        return res.status(StatusCodes.OK).json(book);
+      } else {
+        return res.status(StatusCodes.NOT_FOUND).end();
+      }
+    });
+  } else {
+    const sql = `SELECT *,
   (SELECT count(*) FROM likes WHERE liked_book_id=books.book_id) AS likes,
   (SELECT EXISTS(SELECT * FROM likes WHERE user_id=? AND liked_book_id=?)) AS liked 
   FROM books
   LEFT JOIN category On books.category_id=category.category_id
   WHERE books.book_id = 1`;
 
-  const values = [userId, bookId, bookId];
+    const values = [userId, bookId, bookId];
 
-  conn.query(sql, values, (err, results) => {
-    if (err) {
-      console.log(err);
-      return res.status(StatusCodes.BAD_REQUEST).end();
-    }
+    conn.query(sql, values, (err, results) => {
+      if (err) {
+        console.log(err);
+        return res.status(StatusCodes.BAD_REQUEST).end();
+      }
 
-    const book = results[0];
+      const book = results[0];
 
-    if (book) {
-      return res.status(StatusCodes.OK).json(book);
-    } else {
-      return res.status(StatusCodes.NOT_FOUND).end();
-    }
-  });
+      if (book) {
+        return res.status(StatusCodes.OK).json(book);
+      } else {
+        return res.status(StatusCodes.NOT_FOUND).end();
+      }
+    });
+  }
 };
 
 module.exports = {
